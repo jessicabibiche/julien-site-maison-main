@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Navbar.css */
+body {
+  background-color: #121212; /* Arrière-plan sombre pour le contraste */
+  font-family: "Arial", sans-serif; /* Police moderne */
+}
+
+/* Animation de fond néon */
+.navbar {
+  position: relative;
+  overflow: hidden; /* Pour cacher les éléments qui débordent */
+  z-index: 1; /* Assurer que la barre de navigation soit au-dessus */
+}
+
+.navbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 204, 0, 0.4) 0%,
+    rgba(255, 204, 0, 0.1) 80%
+  );
+  filter: blur(50px);
+  z-index: -1; /* Mettre en arrière-plan */
+  animation: pulse 5s infinite; /* Animation d'éclat */
+}
+
+/* Effet de pulsation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+.text-gradient {
+  background: linear-gradient(
+    90deg,
+    #ffd700,
+    #ffa500
+  ); /* Dégradé doré pour le texte du logo */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.neon-link {
+  color: #d8a44d; /* Doré */
+  font-weight: bold;
+  padding: 10px 20px; /* Effet bouton */
+  border-radius: 25px; /* Bords arrondis */
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1); /* Arrière-plan semi-transparent */
+  backdrop-filter: blur(10px); /* Effet de flou */
+  box-shadow: 0 0 10px #d8a44d; /* Glow effect doré */
+}
+
+.neon-link:hover {
+  color: #a46cba; /* Violet au survol */
+  background: rgba(255, 255, 255, 0.2); /* Arrière-plan plus sombre au survol */
+  box-shadow: 0 0 20px #a46cba; /* Glow violet au survol */
+}
+
+/* Styles des boutons */
+button {
+  background: linear-gradient(
+    90deg,
+    #d8a44d,
+    #a46cba
+  ); /* Dégradé en arrière-plan */
+  border: none;
+  border-radius: 25px; /* Bords arrondis */
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05); /* Effet de mise à l'échelle au survol */
+  filter: brightness(1.1); /* Luminosité au survol */
+}
+
+/* Pour l'élément select */
+select {
+  appearance: none; /* Supprimer le style par défaut */
+  background: #1f1f1f; /* Correspondre au thème sombre */
+  padding: 10px;
+  border-radius: 25px; /* Bords arrondis */
+  color: white;
+  transition: background 0.3s;
+}
+
+select:hover {
+  background: #292929; /* Légèrement plus clair au survol */
+}
