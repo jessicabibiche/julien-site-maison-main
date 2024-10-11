@@ -11,10 +11,12 @@ import Support from "./pages/Support";
 import Connexion from "./pages/Connexion";
 import Inscription from "./pages/Inscription";
 import Videos from "./pages/Videos";
+import VideoGallery from "./components/VideoGallery";
 import APropos from "./pages/APropos";
 import Contact from "./pages/Contact";
 import Profil from "./pages/Profil";
 
+// Route privée qui redirige vers /connexion si non authentifié
 const PrivateRoute = ({ children, isAuthenticated }) => {
   return isAuthenticated ? children : <Navigate to="/connexion" />;
 };
@@ -58,7 +60,11 @@ function App() {
               path="/inscription"
               element={<Inscription setIsAuthenticated={setIsAuthenticated} />}
             />
-            <Route path="/videos" element={<Videos />} />
+            {/* Ajout des routes pour VideoGallery et Videos */}
+            <Route path="/videogallery" element={<VideoGallery />} />{" "}
+            {/* Route pour VideoGallery */}
+            <Route path="/videos" element={<Videos />} />{" "}
+            {/* Route pour Videos */}
             <Route path="/apropos" element={<APropos />} />
             <Route path="/contact" element={<Contact />} />
             <Route

@@ -9,9 +9,27 @@ function LiveTwitch() {
       <p className="mb-4">
         Rejoignez le stream de KOD_ElDragon en direct maintenant !
       </p>
-      <button className="mt-4 bg-yellow-500 text-black px-6 py-3 rounded-full hover:bg-yellow-400 transition-shadow shadow-lg neon-glow">
-        Regarder en Direct
-      </button>
+      <div className="mt-4 flex justify-center">
+        {" "}
+        {/* Ajout de flex et justify-center pour centrer */}
+        {/* Iframe Twitch pour afficher le stream directement sur le site */}
+        <iframe
+          src="https://player.twitch.tv/?channel=kod_eldragon&parent=localhost"
+          height="300" // Réduction de la hauteur
+          width="40%" // Largeur à 50%
+          allowFullScreen={true}
+          frameBorder="0"
+          scrolling="no"
+        ></iframe>
+      </div>
+      <a
+        href="https://www.twitch.tv/kod_eldragon"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 bg-yellow-500 text-black px-6 py-3 rounded-full hover:bg-yellow-400 transition-shadow shadow-lg neon-glow inline-block"
+      >
+        Regarder en Direct sur Twitch
+      </a>
     </div>
   );
 }

@@ -1,42 +1,50 @@
-import React, { useState } from "react";
-
-const videos = [
-  {
-    id: 1,
-    title: "Développement du Jeu - Partie 1",
-    thumbnail: "/images/rocket.webp",
-    videoUrl: "/videos/Best_Of_.mp4",
-  },
-  {
-    id: 2,
-    title: "Développement du Jeu - Partie 2",
-    thumbnail: "/images/ioi.webp",
-    videoUrl:
-      "/videos/KOD_El_Dragon_-_Star_Wars_Fallen_Order_-_On_Pilote_un_TB_TT.mp4",
-  },
-  {
-    id: 3,
-    title: "Développement du Jeu - Partie 3",
-    thumbnail: "/images/modern.webp",
-    videoUrl: "/videos/best_of_kill_.mp4",
-  },
-  {
-    id: 4,
-    title: "Développement du Jeu - Partie 4",
-    thumbnail: "/images/naruto.webp",
-    videoUrl: "/videos/Cinematique_intro_Naruto_Ultimate_Ninja_Storm_NUNS.mp4",
-  },
-  {
-    id: 5,
-    title: "Développement du Jeu - Partie 5",
-    thumbnail: "/images/startwars.jpg",
-    videoUrl:
-      "/videos/KOD_El_Dragon_-_Star_Wars_Fallen_Order_-_On_Pilote_un_TB_TT.mp4",
-  },
-];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 function Videos() {
+  const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
+
+  const CHANNEL_ID = "UCsg7p4fWiwCLULpQw_-RrCg"; // Remplace avec l'ID de la chaîne YouTube de ton client
+
+  // Tableau contenant les images personnalisées
+  const customImages = [
+    "/images/kod1.png",
+    "/images/kod2.png",
+    "/images/kod3.png",
+    "/images/kod4.png",
+    "/images/kod5.png",
+  ];
+
+  // Fonction pour sélectionner une image aléatoirement
+  const getRandomImage = () => {
+    const randomIndex = Math.floor(Math.random() * customImages.length);
+    return customImages[randomIndex];
+  };
+
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/v1/youtube?channelId=${CHANNEL_ID}&maxResults=50`
+        );
+
+        const videoItems = response.data.map((item) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          // Sélectionne une image aléatoire pour chaque vidéo
+          thumbnail: getRandomImage() || item.snippet.thumbnails.default.url,
+          videoUrl: `https://www.youtube.com/embed/${item.id.videoId}`,
+        }));
+
+        setVideos(videoItems);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des vidéos", error);
+      }
+    };
+
+    fetchVideos();
+  }, []);
 
   const handleVideoClick = (videoUrl) => {
     setSelectedVideo(videoUrl);
@@ -48,7 +56,7 @@ function Videos() {
 
   return (
     <div className="bg-black p-8">
-      <h2 className="text-white text-3xl mb-6">Nos Vidéos</h2>
+      <h2 className="text-white text-3xl mb-6">Toutes nos vidéos</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {videos.map((video) => (
           <div
@@ -80,13 +88,16 @@ function Videos() {
             >
               Fermer
             </button>
-            <video
-              controls
+            <iframe
+              width="560"
+              height="315"
               src={selectedVideo}
+              title="Video Player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
               className="w-full h-64 md:w-[560px] md:h-[315px] rounded-lg"
-            >
-              Votre navigateur ne supporte pas la lecture de vidéos.
-            </video>
+            ></iframe>
           </div>
         </div>
       )}
