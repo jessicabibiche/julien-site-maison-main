@@ -1,40 +1,59 @@
 import User from "../users/users.model.js";
 import { StatusCodes } from "http-status-codes";
-import { NotFoundError, UnauthenticatedError } from "../../errors/index.js";
+import bcrypt from "bcrypt";
 
-// Mise à jour du profil utilisateur
-const updateUserProfile = async (req, res) => {
-  const { userId } = req.user; // L'utilisateur connecté
-  const { pseudo, email, bio, password } = req.body;
+// Récupération du profil utilisateur
+const getUserProfile = async (req, res) => {
+  const { userId } = req.user;
 
   try {
-    // Récupération de l'utilisateur depuis la base de données
+    const user = await User.findById(userId).select("-password"); // Ne pas inclure le mot de passe
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Utilisateur non trouvé" });
+    }
+
+    return res.status(StatusCodes.OK).json(user);
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({
+        message: "Erreur lors de la récupération du profil utilisateur",
+      });
+  }
+};
+// Mise à jour du profil utilisateur
+const updateUserProfile = async (req, res) => {
+  const { userId } = req.user;
+  const { pseudo, email, bio } = req.body;
+
+  try {
     const user = await User.findById(userId);
     if (!user) {
-      throw new NotFoundError("Utilisateur non trouvé");
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Utilisateur non trouvé" });
     }
 
-    // Met à jour les informations de profil
-    user.name = pseudo || user.name;
-    user.email = email || user.email;
-    user.bio = bio || user.bio;
+    // Mettre à jour uniquement les champs fournis
+    if (pseudo) user.pseudo = pseudo;
+    if (email) user.email = email;
+    if (bio) user.bio = bio;
 
-    // Génération de l'avatar avec DiceBear
-    user.avatar = `https://avatars.dicebear.com/api/avataaars/${user.name}.svg`;
+    // Sauvegarder les modifications
+    await user.save();
 
-    // Si un mot de passe est fourni, on le met à jour
-    if (password) {
-      user.password = password;
-    }
-
-    await user.save(); // Sauvegarde des modifications
-
-    res
-      .status(StatusCodes.OK)
-      .json({ message: "Profil mis à jour avec succès", user });
+    return res.status(StatusCodes.OK).json({
+      message: "Profil mis à jour avec succès",
+      user: {
+        pseudo: user.pseudo,
+        email: user.email,
+        bio: user.bio,
+      },
+    });
   } catch (error) {
-    console.error("Erreur lors de la mise à jour du profil:", error);
-    res
+    return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Erreur lors de la mise à jour du profil" });
   }
@@ -46,10 +65,11 @@ const deleteUserAccount = async (req, res) => {
 
   try {
     await User.findByIdAndDelete(userId);
-    res.status(StatusCodes.OK).json({ message: "Compte supprimé avec succès" });
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: "Compte supprimé avec succès" });
   } catch (error) {
-    console.error("Erreur lors de la suppression du compte:", error);
-    res
+    return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Erreur lors de la suppression du compte" });
   }

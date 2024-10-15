@@ -53,9 +53,12 @@ const login = async (req, res) => {
     }
 
     const token = user.createAccessToken();
-    res
-      .status(StatusCodes.OK)
-      .json({ user: { id: user._id, name: user.name }, token });
+
+    // Ajout de l'email dans la réponse
+    res.status(StatusCodes.OK).json({
+      user: { id: user._id, name: user.name, email: user.email },
+      token,
+    });
   } catch (error) {
     console.error("Erreur lors de la connexion:", error);
     res

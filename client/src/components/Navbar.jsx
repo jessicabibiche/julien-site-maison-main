@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+import defaultAvatar from "/avatars/avatardefault.png"; // Utilisation correcte de l'avatar par défaut
 
-function Navbar({ isAuthenticated, setIsAuthenticated }) {
+function Navbar({ isAuthenticated, setIsAuthenticated, userAvatar, userName }) {
   const [langue, setLangue] = useState("français");
   const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +13,17 @@ function Navbar({ isAuthenticated, setIsAuthenticated }) {
     if (savedLangue) {
       setLangue(savedLangue);
     }
+
+    // Fermer le menu déroulant quand on clique en dehors
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleLangueChange = (e) => {
@@ -29,7 +40,7 @@ function Navbar({ isAuthenticated, setIsAuthenticated }) {
   };
 
   const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    setShowDropdown((prev) => !prev);
   };
 
   return (
@@ -56,29 +67,44 @@ function Navbar({ isAuthenticated, setIsAuthenticated }) {
         ))}
 
         {isAuthenticated ? (
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={toggleDropdown}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-400 text-white px-4 py-2 rounded-lg transition-all duration-300 hover:scale-110"
+              className="flex items-center space-x-2 px-4 py-2"
             >
-              <FontAwesomeIcon icon={faUser} className="text-2xl" />
+              <div
+                className={`w-10 h-10 rounded-full border-4 ${
+                  userAvatar === defaultAvatar ? "neon-border-violet" : ""
+                }`} // Ajouter l'effet néon violet par défaut
+              >
+                <img
+                  src={userAvatar || defaultAvatar} // Utilisation correcte de l'avatar par défaut
+                  alt="Avatar"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              </div>
             </button>
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded-lg shadow-lg py-2 z-20">
                 <Link
                   to="/profil"
+                  onClick={() => setShowDropdown(false)}
                   className="block px-4 py-2 hover:bg-gray-700"
                 >
-                  Paramètres du compte
+                  Mon Profil
                 </Link>
                 <Link
                   to="/change-password"
+                  onClick={() => setShowDropdown(false)}
                   className="block px-4 py-2 hover:bg-gray-700"
                 >
                   Changer le mot de passe
                 </Link>
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    handleLogout();
+                    setShowDropdown(false);
+                  }}
                   className="block w-full text-left px-4 py-2 hover:bg-red-500"
                 >
                   Déconnexion

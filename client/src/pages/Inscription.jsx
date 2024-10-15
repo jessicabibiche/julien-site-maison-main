@@ -12,13 +12,12 @@ const Inscription = ({ setIsAuthenticated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await register(name, email, password);
-      alert("Inscription réussie");
-      localStorage.setItem("token", data.token); // Sauvegarde le token
+      const data = await register(name, email, password); // Appelle le service d'inscription
+      localStorage.setItem("token", data.token); // Stocke le token JWT
       setIsAuthenticated(true);
-      navigate("/"); // Redirection vers la page de connexion ou une autre page
+      navigate("/"); // Redirige après l'inscription
     } catch (err) {
-      setError(err.message);
+      setError(err.message); // Gère les erreurs
     }
   };
 
