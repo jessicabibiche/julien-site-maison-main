@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import defaultAvatar from "/avatars/avatardefault.png"; // Utilisation correcte de l'avatar par défaut
 
-function Navbar({ isAuthenticated, setIsAuthenticated, userAvatar, userName }) {
+function Navbar({
+  isAuthenticated,
+  setIsAuthenticated,
+  userAvatar,
+  userPseudo,
+}) {
   const [langue, setLangue] = useState("français");
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);

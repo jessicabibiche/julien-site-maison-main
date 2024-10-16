@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 // Schéma utilisateur avec Mongoose
 const UserSchema = new Schema({
-  name: {
+  pseudo: {
     type: String,
     required: [true, "Veuillez fournir un nom"],
     minlength: 3,
@@ -47,7 +47,7 @@ UserSchema.methods.comparePasswords = async function (candidatePassword) {
 // Méthode pour générer un token JWT
 UserSchema.methods.createAccessToken = function () {
   return jwt.sign(
-    { userId: this._id, name: this.name },
+    { userId: this._id, pseudo: this.pseudo },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_LIFETIME }
   );

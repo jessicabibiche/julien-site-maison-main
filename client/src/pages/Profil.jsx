@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import {
   getUserProfile,
   updateUserProfile,
+  updateUserPassword,
   deleteUserAccount,
 } from "../services/user.services";
 
 const defaultAvatar = "/avatars/avatardefault.png"; // Avatar par défaut
 
-const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
+const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
   const [pseudo, setPseudo] = useState("");
   const [email, setEmail] = useState("");
   const [bio, setBio] = useState("");
@@ -17,9 +18,11 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
   const [neonColor, setNeonColor] = useState("violet");
   const [avatarFile, setAvatarFile] = useState(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isCapsLockOn, setIsCapsLockOn] = useState(false);
   const [useNeonEffect, setUseNeonEffect] = useState(true);
   const navigate = useNavigate();
 
@@ -41,29 +44,24 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
     const fetchUserProfile = async () => {
       try {
         const user = await getUserProfile();
-        setPseudo(user.name);
-        setEmail(user.email);
-        setBio(user.bio);
-        if (user.avatar) {
-          setAvatar(user.avatar);
-          setUserAvatar(user.avatar);
-          setUseNeonEffect(false);
-        } else {
-          setUserAvatar(defaultAvatar);
-        }
-        setUserName(user.name);
+        setPseudo(user.pseudo || ""); // Récupérer et afficher le pseudo
+        setEmail(user.email || ""); // Récupérer et afficher l'email
+        setBio(user.bio || ""); // Récupérer et afficher la bio
+        setAvatar(user.avatar || defaultAvatar); // Récupérer l'avatar
+        setUserAvatar(user.avatar || defaultAvatar); // Mise à jour du context pour la navbar
+        setUserPseudo(user.pseudo || ""); // Afficher le nom de l'utilisateur
       } catch (err) {
         setError("Impossible de charger le profil.");
       }
     };
     fetchUserProfile();
-  }, [setUserAvatar, setUserName]);
+  }, [setUserAvatar, setUserPseudo]);
 
-  const handleFieldSubmit = async (field) => {
+  const handleFieldSubmit = async () => {
     try {
       setError("");
       setSuccess("");
-      const updatedProfile = { pseudo, bio, email, password };
+      const updatedProfile = { pseudo, bio, email };
 
       let avatarFileToUpload = avatarFile;
 
@@ -85,9 +83,20 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
         setAvatar(avatar);
         setUserAvatar(avatar);
       }
-      setUserName(updatedUser.name);
+      setUserPseudo(updatedUser.pseudo);
     } catch (err) {
       setError("Erreur lors de la mise à jour du profil utilisateur");
+    }
+  };
+
+  const handlePasswordSubmit = async () => {
+    try {
+      const updatedPassword = { password };
+      await updateUserPassword(updatedPassword);
+      setSuccess("Mot de passe mis à jour avec succès");
+      setShowPasswordModal(false);
+    } catch (error) {
+      setError("Erreur lors de la mise à jour du mot de passe");
     }
   };
 
@@ -110,6 +119,14 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
     setShowAvatarModal(false);
   };
 
+  const handleKeyPress = (e) => {
+    if (e.getModifierState("CapsLock")) {
+      setIsCapsLockOn(true);
+    } else {
+      setIsCapsLockOn(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ?")) {
       try {
@@ -124,16 +141,19 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
   };
 
   return (
-    <div className="p-8 max-w-lg mx-auto bg-gray-800 rounded-md">
-      <h2 className="text-3xl font-bold mb-6">Mon Profil</h2>
+    <div className="p-8 max-w-lg mx-auto bg-gray-900 rounded-md shadow-lg neon-box">
+      <h2 className="text-3xl font-bold mb-6 text-white neon-text">
+        Mon Profil
+      </h2>
       {error && <p className="text-red-500">{error}</p>}
       {success && <p className="text-green-500">{success}</p>}
 
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="flex items-center space-x-2 mb-4">
         <div
-          className={`w-20 h-20 rounded-full ${
+          className={`w-20 h-20 rounded-full cursor-pointer ${
             useNeonEffect ? `neon-border-${neonColor}` : ""
           }`}
+          onClick={() => setShowAvatarModal(true)}
         >
           <img
             src={avatar || defaultAvatar}
@@ -141,94 +161,102 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
             className="w-20 h-20 object-cover rounded-full"
           />
         </div>
-        <button
-          className="text-blue-500 underline"
-          onClick={() => setShowAvatarModal(true)}
-        >
-          Modifier l'avatar
-        </button>
       </div>
 
-      <div>
+      <div className="relative mb-4">
         <label className="block text-white mb-2">Pseudo</label>
-        <input
-          className="w-full p-2 rounded"
-          type="text"
-          value={pseudo}
-          onChange={(e) => setPseudo(e.target.value)}
-          placeholder="Votre pseudo"
-        />
-        <button
-          onClick={() => handleFieldSubmit("pseudo")}
-          className="bg-green-500 text-white p-2 mt-2 rounded w-full"
-        >
-          Modifier le pseudo
-        </button>
+        <div className="relative">
+          <input
+            className="w-full p-2 rounded bg-gray-800 text-white"
+            type="text"
+            value={pseudo}
+            onChange={(e) => setPseudo(e.target.value)}
+            placeholder="Votre pseudo"
+          />
+          <button className="absolute right-2 top-2">
+            <img src="/avatars/crayon.png" alt="edit" className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
-      <div className="mt-4">
+      <div className="relative mb-4">
         <label className="block text-white mb-2">Email</label>
-        <input
-          className="w-full p-2 rounded"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Votre email"
-        />
-        <button
-          onClick={() => handleFieldSubmit("email")}
-          className="bg-green-500 text-white p-2 mt-2 rounded w-full"
-        >
-          Modifier l'email
-        </button>
+        <div className="relative">
+          <input
+            className="w-full p-2 rounded bg-gray-800 text-white"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Votre email"
+          />
+          <button className="absolute right-2 top-2">
+            <img src="/avatars/crayon.png" alt="edit" className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
-      <div className="mt-4">
+      <div className="relative mb-4">
         <label className="block text-white mb-2">Bio</label>
-        <textarea
-          className="w-full p-2 rounded"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          placeholder="Parlez de vous..."
-        ></textarea>
-        <button
-          onClick={() => handleFieldSubmit("bio")}
-          className="bg-green-500 text-white p-2 mt-2 rounded w-full"
-        >
-          Modifier la bio
-        </button>
+        <div className="relative">
+          <textarea
+            className="w-full p-2 rounded bg-gray-800 text-white"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Parlez de vous..."
+          ></textarea>
+          <button className="absolute right-2 top-2">
+            <img src="/avatars/crayon.png" alt="edit" className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       <div className="mt-4">
         <label className="block text-white mb-2">Mot de passe</label>
-        <input
-          className="w-full p-2 rounded"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Votre nouveau mot de passe"
-        />
         <button
-          onClick={() => handleFieldSubmit("password")}
-          className="bg-green-500 text-white p-2 mt-2 rounded w-full"
+          className="bg-blue-500 text-white p-2 rounded w-full"
+          onClick={() => setShowPasswordModal(true)}
         >
           Modifier le mot de passe
         </button>
       </div>
 
-      <div className="mt-4">
-        <label className="block text-white mb-2">
-          Ou téléchargez votre propre avatar
-        </label>
-        <input type="file" onChange={handleFileChange} />
-      </div>
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg">
+            <h3 className="text-xl font-bold mb-4">Changer le mot de passe</h3>
+            <input
+              className="w-full p-2 border rounded"
+              type="password"
+              placeholder="Votre nouveau mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyUp={handleKeyPress}
+            />
+            {isCapsLockOn && (
+              <p className="text-red-500">Caps Lock est activé</p>
+            )}
+            <button
+              className="mt-4 bg-green-500 text-white p-2 rounded w-full"
+              onClick={handlePasswordSubmit}
+            >
+              Sauvegarder
+            </button>
+            <button
+              className="mt-2 bg-red-500 text-white p-2 rounded w-full"
+              onClick={() => setShowPasswordModal(false)}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="mt-4">
         <label className="block text-white mb-2">Couleur du néon</label>
         <select
           value={neonColor}
           onChange={(e) => handleNeonEffectChange(e.target.value)}
-          className="w-full p-2 rounded"
+          className="w-full p-2 rounded bg-gray-800 text-white"
         >
           <option value="none">Aucun néon</option>
           <option value="violet">Violet</option>
@@ -291,7 +319,17 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserName }) => {
                 />
               ))}
             </div>
-
+            <h3 className="text-lg font-semibold mb-2">
+              Télécharger une image
+            </h3>
+            <div className="mb-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange} // Cette fonction gère le téléchargement d'un fichier image
+                className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer"
+              />
+            </div>
             <button
               className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
               onClick={() => setShowAvatarModal(false)}

@@ -1,5 +1,5 @@
 // Fonction pour l'inscription
-export const register = async (name, email, password) => {
+export const register = async (pseudo, email, password) => {
   const baseUrl = import.meta.env.VITE_API_URL; // Récupérer l'URL de base
   if (!baseUrl) throw new Error("VITE_API_URL n'est pas définie");
 
@@ -8,7 +8,7 @@ export const register = async (name, email, password) => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ pseudo, email, password }),
   });
   const data = await response.json();
   if (!response.ok)

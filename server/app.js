@@ -57,9 +57,9 @@ app.get("/", (_req, res) => {
   res.status(200).send("<h1>API</h1><a href='/api-docs'>Documentation</a>");
 });
 
-app.use("/api/v1/auth", auth);
-app.use("/api/v1/profile", profileRoutes);
-app.use("/api/v1/youtube", youtubeRoutes);
+app.use("/api/v1/auth", auth); // Routes pour l'authentification
+app.use("/api/v1/profile", profileRoutes); // Routes pour le profil utilisateur
+app.use("/api/v1/youtube", youtubeRoutes); // Routes pour les vidéos YouTube
 
 // Middleware pour gérer les routes non trouvées et les erreurs
 app.use(notFound);

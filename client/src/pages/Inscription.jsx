@@ -3,7 +3,7 @@ import { register } from "../services/auth.services";
 import { useNavigate } from "react-router-dom";
 
 const Inscription = ({ setIsAuthenticated }) => {
-  const [name, setName] = useState("");
+  const [pseudo, setPseudo] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -12,7 +12,7 @@ const Inscription = ({ setIsAuthenticated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await register(name, email, password); // Appelle le service d'inscription
+      const data = await register(pseudo, email, password); // Appelle le service d'inscription
       localStorage.setItem("token", data.token); // Stocke le token JWT
       setIsAuthenticated(true);
       navigate("/"); // Redirige après l'inscription
@@ -28,8 +28,8 @@ const Inscription = ({ setIsAuthenticated }) => {
         <input
           className="w-full p-2 rounded"
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={pseudo}
+          onChange={(e) => setPseudo(e.target.value)}
           placeholder="Pseudo"
           required
         />

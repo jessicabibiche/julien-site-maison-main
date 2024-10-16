@@ -1,5 +1,4 @@
-// src/services/user.services.js
-const baseUrl = import.meta.env.VITE_API_URL; // Assurez-vous que cette valeur est définie correctement dans .env
+const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api"; // Fallback si VITE_API_URL n'est pas défini
 
 // Fonction pour supprimer un compte utilisateur
 export const deleteUserAccount = async (userId) => {
@@ -7,7 +6,8 @@ export const deleteUserAccount = async (userId) => {
     const response = await fetch(`${baseUrl}/user/${userId}`, {
       method: "DELETE",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // Ajout du token JWT
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -29,11 +29,10 @@ export const getUserProfile = async () => {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json", // Ici c'est un GET, donc JSON
       },
     });
 
-    // Si le token est expiré ou invalide, déconnexion automatique
     if (response.status === 401) {
       localStorage.removeItem("token");
       throw new Error("Session expirée, veuillez vous reconnecter");
@@ -50,7 +49,7 @@ export const getUserProfile = async () => {
   }
 };
 
-// Fonction pour mettre à jour le profil utilisateur
+// Fonction pour mettre à jour le profil utilisateur (pseudo, email, bio, avatar)
 export const updateUserProfile = async (updatedProfile, avatarFile) => {
   try {
     const formData = new FormData();
@@ -66,8 +65,9 @@ export const updateUserProfile = async (updatedProfile, avatarFile) => {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        // Ne pas spécifier Content-Type ici, FormData s'en occupe
       },
-      body: formData, // Utilisation de FormData pour permettre l'envoi d'un fichier
+      body: formData,
     });
 
     if (response.status === 401) {
@@ -77,6 +77,51 @@ export const updateUserProfile = async (updatedProfile, avatarFile) => {
 
     if (!response.ok) {
       throw new Error("Erreur lors de la mise à jour du profil utilisateur");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Erreur:", error);
+    throw error;
+  }
+};
+// Fonction pour mettre à jour le mot de passe de l'utilisateur
+export const updateUserPassword = async (updatedPassword) => {
+  try {
+    const response = await fetch(`${baseUrl}/profile/password`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedPassword),
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la mise à jour du mot de passe");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Erreur:", error);
+    throw error;
+  }
+};
+// Fonction pour demander la réinitialisation du mot de passe
+export const requestPasswordReset = async (email) => {
+  try {
+    const response = await fetch(`${baseUrl}/auth/request-password-reset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        "Erreur lors de la demande de réinitialisation du mot de passe"
+      );
     }
 
     return await response.json();

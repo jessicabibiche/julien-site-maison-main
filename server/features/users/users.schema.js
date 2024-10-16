@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const RegisterUserSchema = z.object({
-  name: z
+  pseudo: z
     .string()
     .min(3, { message: "Le nom doit comporter au moins 3 caractères" }),
   email: z.string().email({ message: "Email invalide" }),
