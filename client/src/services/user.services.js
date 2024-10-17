@@ -1,4 +1,4 @@
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api"; // Fallback si VITE_API_URL n'est pas défini
+const baseUrl = "http://localhost:5000/api/v1"; // Fallback si VITE_API_URL n'est pas défini
 
 // Fonction pour supprimer un compte utilisateur
 export const deleteUserAccount = async (userId) => {

@@ -4,8 +4,11 @@ import {
   updateUserProfile,
   deleteUserAccount,
   updateUserPassword,
+  requestPasswordReset, // Ajout de la fonction pour la demande de réinitialisation
+  resetPassword, // Ajout de la fonction pour réinitialiser le mot de passe
 } from "./profile.controller.js";
 import authenticateUser from "../../middlewares/auth.middleware.js";
+import upload from "../../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
@@ -20,5 +23,11 @@ router.delete("/", authenticateUser, deleteUserAccount);
 
 // Route pour mettre à jour le mot de passe
 router.put("/password", authenticateUser, updateUserPassword);
+
+// Route pour demander une réinitialisation de mot de passe
+router.post("/request-password-reset", requestPasswordReset);
+
+// Route pour réinitialiser le mot de passe avec un token
+router.post("/reset-password/:token", resetPassword);
 
 export default router;
