@@ -5,7 +5,7 @@ function Videos() {
   const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
-  const CHANNEL_ID = "UCsg7p4fWiwCLULpQw_-RrCg"; // Remplace avec l'ID de la chaîne YouTube de ton client
+  const CHANNEL_ID = "UCsg7p4fWiwCLULpQw_-RrCg";
 
   // Tableau contenant les images personnalisées
   const customImages = [

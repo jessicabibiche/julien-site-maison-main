@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -25,7 +24,7 @@ const PrivateRoute = ({ children, isAuthenticated }) => {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userAvatar, setUserAvatar] = useState("");
-  const [userName, setUserName] = useState("");
+  const [userPseudo, setUserPseudo] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -39,7 +38,7 @@ function App() {
         setIsAuthenticated(true);
         // Charger l'avatar et le nom de l'utilisateur
         setUserAvatar(localStorage.getItem("avatar") || ""); // Charger à partir du localStorage (optionnel)
-        setUserName(localStorage.getItem("userName") || "Utilisateur"); // Charger à partir du localStorage (optionnel)
+        setUserPseudo(localStorage.getItem("userPseudo") || "Utilisateur"); // Charger à partir du localStorage (optionnel)
       }
     }
   }, []);
@@ -54,7 +53,7 @@ function App() {
           isAuthenticated={isAuthenticated}
           setIsAuthenticated={setIsAuthenticated}
           userAvatar={userAvatar}
-          userName={userName}
+          userPseudo={userPseudo}
         />
         <div className="bg-black bg-opacity-60 min-h-screen">
           <Routes>
@@ -79,7 +78,7 @@ function App() {
                   <Profil
                     setIsAuthenticated={setIsAuthenticated}
                     setUserAvatar={setUserAvatar}
-                    setUserName={setUserName}
+                    setUserPseudo={setUserPseudo}
                   />
                 </PrivateRoute>
               }

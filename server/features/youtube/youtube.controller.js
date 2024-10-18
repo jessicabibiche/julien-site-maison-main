@@ -9,7 +9,7 @@ export const getVideos = async (req, res) => {
 
   try {
     const response = await axios.get(YOUTUBE_API_URL);
-    res.status(200).json(response.data.items); // Envoie les vidéos en réponse
+    res.status(200).json(response.data.items);
   } catch (error) {
     res.status(500).json({
       message: "Erreur lors de la récupération des vidéos",

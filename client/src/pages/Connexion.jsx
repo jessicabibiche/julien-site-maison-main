@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { login } from "../services/auth.services"; // Assure-toi d'importer le service d'authentification
+import { login } from "../services/auth.services";
 import { useNavigate } from "react-router-dom";
 
 const Connexion = ({ setIsAuthenticated }) => {
-  const [email, setEmail] = useState(""); // État pour l'email
-  const [password, setPassword] = useState(""); // État pour le mot de passe
-  const [error, setError] = useState(""); // État pour les erreurs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // Fonction appelée lorsque le formulaire est soumis

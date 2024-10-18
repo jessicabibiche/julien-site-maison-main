@@ -1,15 +1,15 @@
 import User from "../users/users.model.js";
 import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
-import crypto from "crypto"; // Pour générer des tokens sécurisés
-import sendEmail from "../utils/sendEmail.js"; // Assurez-vous d'avoir une fonction pour envoyer des emails
+import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js";
 
 // Récupération du profil utilisateur
 const getUserProfile = async (req, res) => {
   const { userId } = req.user;
 
   try {
-    const user = await User.findById(userId).select("-password"); // Ne pas inclure le mot de passe
+    const user = await User.findById(userId).select("-password");
     if (!user) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -40,7 +40,7 @@ const updateUserProfile = async (req, res) => {
 
     // Vérifie si un fichier d'avatar a été uploadé
     if (req.file) {
-      avatar = `/uploads/${req.file.filename}`; // Par exemple, une URL basée sur le fichier téléchargé
+      avatar = `/uploads/${req.file.filename}`;
       user.avatar = avatar;
     }
 
@@ -58,7 +58,7 @@ const updateUserProfile = async (req, res) => {
         pseudo: user.pseudo,
         email: user.email,
         bio: user.bio,
-        avatar: user.avatar, // Inclure l'avatar mis à jour
+        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -175,7 +175,7 @@ const resetPassword = async (req, res) => {
     // Trouver l'utilisateur correspondant au token
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now() }, // Vérifier si le token est toujours valide
+      resetPasswordExpires: { $gt: Date.now() },
     });
 
     if (!user) {
@@ -186,7 +186,7 @@ const resetPassword = async (req, res) => {
 
     // Mettre à jour le mot de passe
     user.password = await bcrypt.hash(newPassword, 10);
-    user.resetPasswordToken = undefined; // Supprimer le token après utilisation
+    user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
 

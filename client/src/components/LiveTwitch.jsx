@@ -11,12 +11,11 @@ function LiveTwitch() {
       </p>
       <div className="mt-4 flex justify-center">
         {" "}
-        {/* Ajout de flex et justify-center pour centrer */}
         {/* Iframe Twitch pour afficher le stream directement sur le site */}
         <iframe
           src="https://player.twitch.tv/?channel=kod_eldragon&parent=localhost"
-          height="300" // Réduction de la hauteur
-          width="40%" // Largeur à 50%
+          height="300"
+          width="40%"
           allowFullScreen={true}
           frameBorder="0"
           scrolling="no"

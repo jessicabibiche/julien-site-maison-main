@@ -3,19 +3,21 @@ import { useNavigate } from "react-router-dom";
 import {
   getUserProfile,
   updateUserProfile,
-  updateUserPassword,
   deleteUserAccount,
-  requestPasswordReset, // Import correct de la fonction requestPasswordReset
+  requestPasswordReset,
 } from "../services/user.services";
 
 const defaultAvatar = "/avatars/avatardefault.png"; // Avatar par défaut
 
 const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
-  const [pseudo, setPseudo] = useState("");
-  const [email, setEmail] = useState("");
-  const [bio, setBio] = useState("");
+  // Déclaration des états
+  const [pseudo, setPseudo] = useState(localStorage.getItem("pseudo") || "");
+  const [email, setEmail] = useState(localStorage.getItem("email") || "");
+  const [bio, setBio] = useState(localStorage.getItem("bio") || "");
   const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState(defaultAvatar); // Avatar par défaut
+  const [avatar, setAvatar] = useState(
+    localStorage.getItem("avatar") || defaultAvatar
+  );
   const [neonColor, setNeonColor] = useState("violet");
   const [avatarFile, setAvatarFile] = useState(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
@@ -23,15 +25,18 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isModified, setIsModified] = useState(false);
   const [, setIsCapsLockOn] = useState(false); // Gestion de Caps Lock
-  const [useNeonEffect, setUseNeonEffect] = useState(true); // Néon activé par défaut
+  const [useNeonEffect, setUseNeonEffect] = useState(true);
   const navigate = useNavigate();
 
   // Références pour chaque champ
   const pseudoInputRef = useRef(null);
   const emailInputRef = useRef(null);
   const bioInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
 
+  // Avatars prédéfinis
   const predefinedAvatars = Array.from(
     { length: 84 },
     (_, index) => `/avatars/avatar${index + 1}.jpg`
@@ -52,12 +57,20 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
     const fetchUserProfile = async () => {
       try {
         const user = await getUserProfile();
-        setPseudo(user.pseudo || ""); // Récupérer et afficher le pseudo
-        setEmail(user.email || ""); // Récupérer et afficher l'email
-        setBio(user.bio || ""); // Récupérer et afficher la bio
-        setAvatar(user.avatar || defaultAvatar); // Récupérer l'avatar
-        setUserAvatar(user.avatar || defaultAvatar); // Mise à jour pour la navbar
-        setUserPseudo(user.pseudo || ""); // Afficher le nom de l'utilisateur
+        setPseudo(user.pseudo || "");
+        setEmail(user.email || "");
+        setBio(user.bio || "");
+        setAvatar(user.avatar || defaultAvatar);
+
+        // Mise à jour des informations dans le localStorage pour persistance
+        localStorage.setItem("pseudo", user.pseudo || "");
+        localStorage.setItem("email", user.email || "");
+        localStorage.setItem("bio", user.bio || "");
+        localStorage.setItem("avatar", user.avatar || defaultAvatar);
+
+        // Mise à jour de l'état dans la navbar
+        setUserAvatar(user.avatar || defaultAvatar);
+        setUserPseudo(user.pseudo || "");
       } catch (err) {
         setError("Impossible de charger le profil.");
       }
@@ -68,21 +81,10 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
   // Mise à jour des informations de la navbar après succès de la modification du profil
   useEffect(() => {
     if (success) {
-      const updateNavbar = async () => {
-        try {
-          const user = await getUserProfile();
-          setUserAvatar(user.avatar || defaultAvatar);
-          setUserPseudo(user.pseudo || "");
-        } catch (error) {
-          console.error(
-            "Erreur lors de la mise à jour des informations de la navbar :",
-            error
-          );
-        }
-      };
-      updateNavbar();
+      setUserAvatar(avatar);
+      setUserPseudo(pseudo);
     }
-  }, [success]);
+  }, [success, avatar, pseudo, setUserAvatar, setUserPseudo]);
 
   // Soumission du formulaire de mise à jour du profil
   const handleFieldSubmit = async () => {
@@ -95,40 +97,59 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
       setError("");
       setSuccess("");
       const updatedProfile = { pseudo, bio, email };
-      let avatarFileToUpload = avatarFile;
 
-      if (selectedAvatar) {
-        updatedProfile.avatar = selectedAvatar;
-        avatarFileToUpload = null;
-      }
+      const updatedUser = await updateUserProfile(updatedProfile);
 
-      const updatedUser = await updateUserProfile(
-        updatedProfile,
-        avatarFileToUpload
-      );
+      // Mise à jour des informations de l'utilisateur et dans le localStorage
+      setPseudo(updatedUser.pseudo || pseudo);
+      setEmail(updatedUser.email || email);
+      setBio(updatedUser.bio || bio);
+      setAvatar(updatedUser.avatar || avatar);
+      localStorage.setItem("pseudo", updatedUser.pseudo || pseudo);
+      localStorage.setItem("email", updatedUser.email || email);
+      localStorage.setItem("bio", updatedUser.bio || bio);
+      localStorage.setItem("avatar", updatedUser.avatar || avatar);
+
       setSuccess("Profil mis à jour avec succès !");
-      if (updatedUser.avatar) {
-        setAvatar(updatedUser.avatar);
-        localStorage.setItem("userAvatar", updatedUser.avatar);
-        setUserAvatar(updatedUser.avatar);
-      } else {
-        setAvatar(avatar);
-        setUserAvatar(avatar);
-      }
-      setUserPseudo(updatedUser.pseudo);
+      setIsModified(false); // Réinitialiser l'indicateur de modification
     } catch (err) {
+      console.error("Erreur lors de la mise à jour :", err);
       setError("Erreur lors de la mise à jour du profil utilisateur");
     }
+  };
+
+  // Gestion des modifications de champs
+  const handleFieldChange = (setter, value) => {
+    setter(value);
+    setIsModified(true); // Activer le bouton de sauvegarde en cas de modification
   };
 
   // Soumission de la demande de réinitialisation du mot de passe
   const handlePasswordSubmit = async () => {
     try {
-      await requestPasswordReset(email); // Correction pour utiliser requestPasswordReset
+      await requestPasswordReset(email);
       setSuccess("Un email de réinitialisation de mot de passe a été envoyé.");
       setShowPasswordModal(false);
     } catch (error) {
       setError("Erreur lors de la demande de réinitialisation du mot de passe");
+    }
+  };
+
+  // Suppression du compte utilisateur
+  const handleDeleteAccount = async () => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ?")) {
+      try {
+        await deleteUserAccount();
+        localStorage.removeItem("token");
+        localStorage.removeItem("pseudo");
+        localStorage.removeItem("email");
+        localStorage.removeItem("bio");
+        localStorage.removeItem("avatar");
+        setIsAuthenticated(false);
+        navigate("/");
+      } catch (err) {
+        setError("Erreur lors de la suppression du compte.");
+      }
     }
   };
 
@@ -137,10 +158,15 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
     const file = e.target.files[0];
     if (file) {
       setAvatarFile(file);
-      setSelectedAvatar(URL.createObjectURL(file));
-      setAvatar(URL.createObjectURL(file));
-      setUserAvatar(URL.createObjectURL(file));
+      const avatarUrl = URL.createObjectURL(file);
+      setSelectedAvatar(avatarUrl);
+      setAvatar(avatarUrl);
+      setUserAvatar(avatarUrl);
       setUseNeonEffect(false);
+
+      // Mise à jour dans le localStorage
+      localStorage.setItem("avatar", avatarUrl);
+      setIsModified(true); // Activer le bouton de sauvegarde en cas de modification
     }
   };
 
@@ -151,29 +177,10 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
     setUserAvatar(avatarUrl);
     setUseNeonEffect(false);
     setShowAvatarModal(false);
-  };
 
-  // Gestion de l'appui sur une touche pour détecter Caps Lock
-  const handleKeyPress = (e) => {
-    if (e.getModifierState("CapsLock")) {
-      setIsCapsLockOn(true);
-    } else {
-      setIsCapsLockOn(false);
-    }
-  };
-
-  // Suppression du compte utilisateur
-  const handleDeleteAccount = async () => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ?")) {
-      try {
-        await deleteUserAccount();
-        localStorage.removeItem("token");
-        setIsAuthenticated(false);
-        navigate("/");
-      } catch (err) {
-        setError("Erreur lors de la suppression du compte.");
-      }
-    }
+    // Mise à jour dans le localStorage
+    localStorage.setItem("avatar", avatarUrl);
+    setIsModified(true); // Activer le bouton de sauvegarde en cas de modification
   };
 
   return (
@@ -209,9 +216,8 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
             className="w-full p-2 rounded bg-gray-800 text-white"
             type="text"
             value={pseudo}
-            onChange={(e) => setPseudo(e.target.value)}
+            onChange={(e) => handleFieldChange(setPseudo, e.target.value)}
             placeholder="Votre pseudo"
-            onKeyPress={handleKeyPress} // Appel de handleKeyPress ici
           />
           <button
             className="absolute right-2 top-2"
@@ -231,7 +237,7 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
             className="w-full p-2 rounded bg-gray-800 text-white"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleFieldChange(setEmail, e.target.value)}
             placeholder="Votre email"
           />
           <button
@@ -251,7 +257,7 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
             ref={bioInputRef}
             className="w-full p-2 rounded bg-gray-800 text-white"
             value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            onChange={(e) => handleFieldChange(setBio, e.target.value)}
             placeholder="Parlez de vous..."
           ></textarea>
           <button
@@ -264,22 +270,43 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
       </div>
 
       {/* Mot de passe */}
-      <div className="mt-4">
+      <div className="relative mb-4">
         <label className="block text-white mb-2">Mot de passe</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyPress={handleKeyPress} // Utilisation pour détecter Caps Lock ici
-          className="w-full p-2 rounded bg-gray-800 text-white"
-        />
-        <button
-          className="bg-blue-500 text-white p-2 rounded w-full mt-2"
-          onClick={() => setShowPasswordModal(true)}
-        >
-          Modifier le mot de passe
-        </button>
+        <div className="relative">
+          <input
+            ref={passwordInputRef}
+            className="w-full p-2 rounded bg-gray-800 text-white"
+            type="password"
+            value={password}
+            onChange={(e) => handleFieldChange(setPassword, e.target.value)}
+            placeholder="********"
+          />
+          <button
+            className="absolute right-2 top-2"
+            onClick={() => passwordInputRef.current.focus()}
+          >
+            <img src="/avatars/crayon.png" alt="edit" className="w-6 h-6" />
+          </button>
+        </div>
       </div>
+
+      {/* Sauvegarder les modifications */}
+      {isModified && (
+        <button
+          onClick={handleFieldSubmit}
+          className="bg-green-500 text-white p-2 mt-4 rounded w-full"
+        >
+          Sauvegarder les modifications
+        </button>
+      )}
+
+      {/* Modifier le mot de passe */}
+      <button
+        className="bg-blue-500 text-white p-2 rounded w-full mt-2"
+        onClick={() => setShowPasswordModal(true)}
+      >
+        Modifier le mot de passe
+      </button>
 
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center">
@@ -290,7 +317,7 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
             </p>
             <button
               className="mt-4 bg-green-500 text-white p-2 rounded w-full"
-              onClick={handlePasswordSubmit} // Appel de requestPasswordReset ici
+              onClick={handlePasswordSubmit}
             >
               Envoyer la demande de réinitialisation
             </button>
@@ -363,7 +390,7 @@ const Profil = ({ setIsAuthenticated, setUserAvatar, setUserPseudo }) => {
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleFileChange} // Cette fonction gère le téléchargement d'un fichier image
+                onChange={handleFileChange}
                 className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer"
               />
             </div>

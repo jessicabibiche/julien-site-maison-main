@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,6 +9,7 @@ import connectDB from "./config/db.config.js";
 import { auth } from "./features/auth/index.js";
 import profileRoutes from "./features/profile/profile.route.js";
 import youtubeRoutes from "./features/youtube/youtube.route.js";
+import contactRoutes from "./features/contact/contact.route.js";
 import mongoSanitize from "express-mongo-sanitize";
 import helmet from "helmet";
 import cors from "cors";
@@ -60,6 +60,7 @@ app.get("/", (_req, res) => {
 app.use("/api/v1/auth", auth); // Routes pour l'authentification
 app.use("/api/v1/profile", profileRoutes); // Routes pour le profil utilisateur
 app.use("/api/v1/youtube", youtubeRoutes); // Routes pour les vidéos YouTube
+app.use("/api/v1/contact", contactRoutes); // Routes pour la fonctionnalité de contact
 
 // Middleware pour gérer les routes non trouvées et les erreurs
 app.use(notFound);

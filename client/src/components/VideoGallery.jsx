@@ -4,7 +4,7 @@ import axios from "axios";
 function VideoGallery() {
   const [videos, setVideos] = useState([]);
 
-  const CHANNEL_ID = "UCsg7p4fWiwCLULpQw_-RrCg"; // Remplace avec l'ID de la chaîne YouTube de ton client
+  const CHANNEL_ID = "UCsg7p4fWiwCLULpQw_-RrCg";
   const MAX_RESULTS = 5; // Afficher uniquement 5 vidéos
 
   // Tableau contenant les images personnalisées

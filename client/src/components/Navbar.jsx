@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import defaultAvatar from "/avatars/avatardefault.png"; // Utilisation correcte de l'avatar par défaut
+import defaultAvatar from "/avatars/avatardefault.png";
 
 function Navbar({
   isAuthenticated,

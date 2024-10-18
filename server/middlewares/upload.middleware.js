@@ -4,7 +4,7 @@ import path from "path";
 // Configurer Multer pour stocker les fichiers téléchargés dans 'public/avatars'
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join("client", "public", "avatars")); // Dossier pour stocker les avatars
+    cb(null, path.join("client", "public", "avatars"));
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
