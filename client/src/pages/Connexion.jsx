@@ -1,24 +1,23 @@
 import React, { useState } from "react";
-import { login } from "../services/auth.services"; // Assure-toi d'importer le service d'authentification
+import { login } from "../services/auth.services";
 import { useNavigate } from "react-router-dom";
 
 const Connexion = ({ setIsAuthenticated }) => {
-  const [email, setEmail] = useState(""); // État pour l'email
-  const [password, setPassword] = useState(""); // État pour le mot de passe
-  const [error, setError] = useState(""); // État pour les erreurs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // Fonction appelée lorsque le formulaire est soumis
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Empêche le rechargement de la page lors de la soumission du formulaire
+    e.preventDefault();
     try {
-      const data = await login(email, password); // Appelle la fonction login du service
-      alert("Connexion réussie");
-      localStorage.setItem("token", data.token); // Sauvegarde le token dans le localStorage
+      const data = await login(email, password); // Appelle le service d'authentification
+      localStorage.setItem("token", data.token); // Stocke le token JWT
       setIsAuthenticated(true);
-      navigate("/"); // Redirige vers la page d'accueil après connexion
+      navigate("/"); // Redirige après la connexion
     } catch (err) {
-      setError(err.message); // Affiche le message d'erreur si la connexion échoue
+      setError(err.message); // Gère les erreurs
     }
   };
 

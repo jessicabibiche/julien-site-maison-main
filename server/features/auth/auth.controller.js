@@ -4,9 +4,9 @@ import { UnauthenticatedError } from "../../errors/index.js";
 
 // Fonction d'inscription
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { pseudo, email, password } = req.body;
 
-  if (!name || !email || !password) {
+  if (!pseudo || !email || !password) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Tous les champs sont obligatoires" });
@@ -22,12 +22,12 @@ const register = async (req, res) => {
     }
 
     // Crée un nouvel utilisateur
-    const user = await createUser({ name, email, password });
+    const user = await createUser({ pseudo, email, password });
     const token = user.createAccessToken(); // Génère un token JWT
 
     res
       .status(StatusCodes.CREATED)
-      .json({ user: { name: user.name, email: user.email }, token });
+      .json({ user: { pseudo: user.pseudo, email: user.email }, token });
   } catch (error) {
     console.error("Erreur lors de l'inscription:", error);
     res
@@ -53,9 +53,11 @@ const login = async (req, res) => {
     }
 
     const token = user.createAccessToken();
-    res
-      .status(StatusCodes.OK)
-      .json({ user: { id: user._id, name: user.name }, token });
+
+    res.status(StatusCodes.OK).json({
+      user: { id: user._id, pseudo: user.pseudo, email: user.email },
+      token,
+    });
   } catch (error) {
     console.error("Erreur lors de la connexion:", error);
     res

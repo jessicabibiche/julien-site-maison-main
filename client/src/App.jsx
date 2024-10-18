@@ -11,16 +11,20 @@ import Support from "./pages/Support";
 import Connexion from "./pages/Connexion";
 import Inscription from "./pages/Inscription";
 import Videos from "./pages/Videos";
+import VideoGallery from "./components/VideoGallery";
 import APropos from "./pages/APropos";
 import Contact from "./pages/Contact";
 import Profil from "./pages/Profil";
 
+// Route privée qui redirige vers /connexion si non authentifié
 const PrivateRoute = ({ children, isAuthenticated }) => {
   return isAuthenticated ? children : <Navigate to="/connexion" />;
 };
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userAvatar, setUserAvatar] = useState("");
+  const [userPseudo, setUserPseudo] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -32,6 +36,9 @@ function App() {
         setIsAuthenticated(false);
       } else {
         setIsAuthenticated(true);
+        // Charger l'avatar et le nom de l'utilisateur
+        setUserAvatar(localStorage.getItem("avatar") || ""); // Charger à partir du localStorage (optionnel)
+        setUserPseudo(localStorage.getItem("userPseudo") || "Utilisateur"); // Charger à partir du localStorage (optionnel)
       }
     }
   }, []);
@@ -45,6 +52,8 @@ function App() {
         <Navbar
           isAuthenticated={isAuthenticated}
           setIsAuthenticated={setIsAuthenticated}
+          userAvatar={userAvatar}
+          userPseudo={userPseudo}
         />
         <div className="bg-black bg-opacity-60 min-h-screen">
           <Routes>
@@ -58,6 +67,7 @@ function App() {
               path="/inscription"
               element={<Inscription setIsAuthenticated={setIsAuthenticated} />}
             />
+            <Route path="/videogallery" element={<VideoGallery />} />
             <Route path="/videos" element={<Videos />} />
             <Route path="/apropos" element={<APropos />} />
             <Route path="/contact" element={<Contact />} />
@@ -65,7 +75,11 @@ function App() {
               path="/profil"
               element={
                 <PrivateRoute isAuthenticated={isAuthenticated}>
-                  <Profil />
+                  <Profil
+                    setIsAuthenticated={setIsAuthenticated}
+                    setUserAvatar={setUserAvatar}
+                    setUserPseudo={setUserPseudo}
+                  />
                 </PrivateRoute>
               }
             />

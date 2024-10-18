@@ -1,13 +1,30 @@
 import express from "express";
-import { updateUserProfile, deleteUserAccount } from "./profile.controller.js";
-import authenticateUser from "../../middlewares/auth.middleware.js"; // Assurez-vous que ce middleware est correctement importé
+import {
+  getUserProfile,
+  updateUserProfile,
+  deleteUserAccount,
+  updateUserPassword,
+  requestPasswordReset,
+  resetPassword,
+} from "./profile.controller.js";
+import authenticateUser from "../../middlewares/auth.middleware.js";
+import upload from "../../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
-// Route pour mettre à jour le profil de l'utilisateur
-router.put("/", authenticateUser, updateUserProfile);
+// Récupérer le profil utilisateur
+router.get("/", authenticateUser, getUserProfile);
 
-// Route pour supprimer le compte utilisateur
+// Mettre à jour le profil utilisateur
+router.put("/", authenticateUser, upload.single("avatar"), updateUserProfile);
+
+// Supprimer le compte utilisateur
 router.delete("/", authenticateUser, deleteUserAccount);
+
+// Route pour mettre à jour le mot de passe
+router.put("/password", authenticateUser, updateUserPassword);
+
+// Route pour réinitialiser le mot de passe avec un token
+router.post("/reset-password/:token", resetPassword);
 
 export default router;

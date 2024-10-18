@@ -1,6 +1,6 @@
 import React from "react";
-import LiveTwitch from "../components/LiveTwitch"; // Importation de la section Twitch
-import Videos from "../components/VideoGallery"; // Importation de la galerie de vidéos
+import LiveTwitch from "../components/LiveTwitch";
+import Videos from "../components/VideoGallery";
 
 function Accueil() {
   return (

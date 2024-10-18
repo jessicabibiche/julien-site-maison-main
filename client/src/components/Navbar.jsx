@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+import defaultAvatar from "/avatars/avatardefault.png";
 
-function Navbar({ isAuthenticated, setIsAuthenticated }) {
+function Navbar({
+  isAuthenticated,
+  setIsAuthenticated,
+  userAvatar,
+  userPseudo,
+}) {
   const [langue, setLangue] = useState("français");
-  const [showDropdown, setShowDropdown] = useState(false); // Pour afficher/masquer le menu déroulant
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +18,17 @@ function Navbar({ isAuthenticated, setIsAuthenticated }) {
     if (savedLangue) {
       setLangue(savedLangue);
     }
+
+    // Fermer le menu déroulant quand on clique en dehors
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleLangueChange = (e) => {
@@ -21,27 +37,24 @@ function Navbar({ isAuthenticated, setIsAuthenticated }) {
     localStorage.setItem("langue", newLangue);
   };
 
-  // Fonction de déconnexion
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Suppression du token
+    localStorage.removeItem("token");
     setIsAuthenticated(false);
     alert("Vous êtes déconnecté");
-    navigate("/"); // Rediriger vers la page d'accueil après déconnexion
+    navigate("/");
   };
 
-  // Toggle pour afficher ou cacher le menu déroulant
   const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    setShowDropdown((prev) => !prev);
   };
 
   return (
-    <nav className="bg-black p-4 flex justify-between items-center shadow-lg border-b-2 border-[#d8a44d]">
-      <div className="flex items-center">
-        <h1 className="text-4xl font-extrabold text-gradient">KOD_ELDRAGON</h1>
+    <nav className="relative bg-black p-4 shadow-lg flex justify-between items-center rounded-lg">
+      <div className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-blue-500">
+        KOD_ELDRAGON
       </div>
 
-      <div className="flex items-center space-x-4">
-        {/* Liens de Navigation */}
+      <div className="flex items-center space-x-6">
         {[
           { label: "Accueil", path: "/" },
           { label: "Vidéos", path: "/videos" },
@@ -52,74 +65,80 @@ function Navbar({ isAuthenticated, setIsAuthenticated }) {
           <Link
             key={index}
             to={item.path}
-            className="text-lg font-semibold neon-link px-4 py-2 rounded-full transition-all duration-300"
+            className="text-lg text-white font-semibold px-4 py-2 transition-all duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-yellow-400 hover:to-blue-500"
           >
             {item.label}
           </Link>
         ))}
 
-        {/* Si l'utilisateur est connecté */}
         {isAuthenticated ? (
-          <>
-            <div className="relative">
-              <button
-                onClick={toggleDropdown}
-                className="text-white px-4 py-2 rounded-full transition-all duration-300 hover:scale-105"
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={toggleDropdown}
+              className="flex items-center space-x-2 px-4 py-2"
+            >
+              <div
+                className={`w-10 h-10 rounded-full border-4 ${
+                  userAvatar === defaultAvatar ? "neon-border-violet" : ""
+                }`} // Ajouter l'effet néon violet par défaut
               >
-                <FontAwesomeIcon icon={faUser} className="text-2xl" />{" "}
-                {/* Icône utilisateur */}
-              </button>
-
-              {/* Menu déroulant */}
-              {showDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-20">
-                  <Link
-                    to="/profil"
-                    className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-                    onClick={() => setShowDropdown(false)}
-                  >
-                    Paramètres du compte
-                  </Link>
-                  <Link
-                    to="/change-password"
-                    className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-                    onClick={() => setShowDropdown(false)}
-                  >
-                    Changer le mot de passe
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
-                  >
-                    Déconnexion
-                  </button>
-                </div>
-              )}
-            </div>
-          </>
+                <img
+                  src={userAvatar || defaultAvatar} // Utilisation correcte de l'avatar par défaut
+                  alt="Avatar"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              </div>
+            </button>
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded-lg shadow-lg py-2 z-20">
+                <Link
+                  to="/profil"
+                  onClick={() => setShowDropdown(false)}
+                  className="block px-4 py-2 hover:bg-gray-700"
+                >
+                  Mon Profil
+                </Link>
+                <Link
+                  to="/change-password"
+                  onClick={() => setShowDropdown(false)}
+                  className="block px-4 py-2 hover:bg-gray-700"
+                >
+                  Changer le mot de passe
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setShowDropdown(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 hover:bg-red-500"
+                >
+                  Déconnexion
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
-          <>
+          <div className="flex space-x-4">
             <Link
               to="/connexion"
-              className="bg-gradient-to-r from-[#d8a44d] to-[#a46cba] text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg transform hover:scale-105"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg"
             >
               Connexion
             </Link>
             <Link
               to="/inscription"
-              className="bg-gradient-to-r from-[#d8a44d] to-[#a46cba] text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg transform hover:scale-105"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg"
             >
               Inscription
             </Link>
-          </>
+          </div>
         )}
 
-        {/* Sélecteur de Langue */}
         <select
           id="langue"
           value={langue}
           onChange={handleLangueChange}
-          className="bg-gray-800 text-white border border-[#d8a44d] rounded-full px-4 py-2 transition-all duration-300 hover:border-[#a46cba]"
+          className="bg-gray-800 text-white border border-yellow-500 rounded-full px-4 py-2 hover:border-yellow-600 transition-all duration-300"
         >
           <option value="français">Français</option>
           <option value="portugais">Portugais</option>

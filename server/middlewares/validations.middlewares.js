@@ -33,7 +33,7 @@ const validate =
           errors: error.errors,
         });
       }
-      next(error); // Gestion des erreurs inconnues
+      next(error);
     }
   };
 
